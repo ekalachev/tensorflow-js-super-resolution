@@ -21,8 +21,10 @@
     "@angular/router": "~10.0.2",
     "@tensorflow/tfjs": "2.8.0",
     "@types/webgl2": "0.0.5",
+    "angular-web-worker": "^1.0.6",
     "rxjs": "~6.5.5",
     "tslib": "^2.0.0",
+    "worker-loader": "^3.0.6",
     "zone.js": "~0.10.3"
   },
   "devDependencies": {

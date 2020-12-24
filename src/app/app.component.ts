@@ -1,4 +1,7 @@
 import { Component, ElementRef, ViewChild } from '@angular/core';
+import { WorkerManager, WorkerClient } from 'angular-web-worker/angular';
+import { SuperResolutionWorker } from './workers/super-resolution.worker';
+
 import { DepthToSpace } from './TensorFlowOpLayer';
 
 import * as tf from '@tensorflow/tfjs';
@@ -23,14 +26,25 @@ export class AppComponent {
 
   stream: MediaStream;
 
-  model: tf.LayersModel;
+  private worker: WorkerClient<SuperResolutionWorker>;
+
+  // model: tf.LayersModel;
   prediction: any;
   counterNum: number = 0;
 
-  async ngOnInit(): Promise<void> {
-    tf.serialization.SerializationMap.register(DepthToSpace);
+  constructor(private workerManager: WorkerManager) { }
 
-    await this.loadModel();
+  async ngOnInit(): Promise<void> {
+    if (this.workerManager.isBrowserCompatible) {
+      this.worker = this.workerManager.createClient(SuperResolutionWorker);
+    } else {
+      // if code won't block UI else implement other fallback behaviour
+      this.worker = this.workerManager.createClient(SuperResolutionWorker, true);
+    }
+
+    // await this.loadModel();
+
+    await this.worker.connect();
 
     // const stream = await this.getUserMedia();
 
@@ -51,41 +65,35 @@ export class AppComponent {
   }
 
   async detectFrame() {
-    // const canvasLr = this.videoLrCanvas.nativeElement.getContext('2d');
+    tf.engine().startScope();
 
-    // canvasLr.drawImage(this.videoElement.nativeElement, 0, 0, 96, 96);
+    const lr = tf.browser.fromPixels(this.imgLr.nativeElement, 3).arraySync();
 
-    // await this.execute(this.videoLrCanvas.nativeElement, this.videoSrCanvas.nativeElement);
+    const sr = await this.worker.call(w => w.doWork(lr)) as number[][][];
 
-    tf.tidy(() => {
+    tf.browser.toPixels(sr, this.videoSrCanvas.nativeElement);
 
-      let img = tf.browser.fromPixels(this.imgLr.nativeElement, 3);
-      // img = tf.image.resizeNearestNeighbor(img, [96, 96]);
-      img = tf.div(img, 255);
-      img = tf.expandDims(img, 0);
-      let sr = this.model.predict(img) as tf.Tensor;
-      sr = tf.mul(tf.div(tf.add(sr, 1), 2), 255).arraySync()[0];
+    // console.log(tf.memory().numTensors);
 
-      tf.browser.toPixels(sr as tf.Tensor3D, this.videoSrCanvas.nativeElement);
+    tf.engine().endScope();
 
-      this.counterNum++;
-      this.counter.nativeElement.innerHTML = this.counterNum;
-    });
+    this.counterNum++;
+    this.counter.nativeElement.innerHTML = this.counterNum;
 
     requestAnimationFrame(() => {
       this.detectFrame();
     });
   }
 
-  async loadModel() {
-    this.model = await tf.loadLayersModel('/assets/fast_srgan/model.json');
+  // async loadModel() {
+  //   this.model = await tf.loadLayersModel('/assets/fast_srgan/model.json');
 
-    // const inputs = tf.layers.input({shape: [128, 128, 3]});
-    // const outputs = model.apply(inputs) as tf.SymbolicTensor;
-    // this.model = tf.model({inputs: inputs, outputs: outputs});
+  //   // const inputs = tf.layers.input({shape: [128, 128, 3]});
+  //   // const outputs = model.apply(inputs) as tf.SymbolicTensor;
+  //   // this.model = tf.model({inputs: inputs, outputs: outputs});
 
-    console.log("Model has benn loaded");
-  }
+  //   console.log("Model has benn loaded");
+  // }
 
 
   private async getUserMedia(): Promise<MediaStream> {
