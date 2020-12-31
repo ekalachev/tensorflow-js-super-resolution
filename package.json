@@ -20,6 +20,7 @@
     "@angular/platform-browser-dynamic": "~10.0.2",
     "@angular/router": "~10.0.2",
     "@tensorflow/tfjs": "2.8.0",
+    "@types/w3c-image-capture": "^1.0.2",
     "@types/webgl2": "0.0.5",
     "angular-web-worker": "^1.0.6",
     "rxjs": "~6.5.5",

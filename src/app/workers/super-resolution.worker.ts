@@ -1,6 +1,8 @@
 import { AngularWebWorker, bootstrapWorker, OnWorkerInit, Callable } from 'angular-web-worker';
 import * as tf from '@tensorflow/tfjs';
 import { DepthToSpace } from './../TensorFlowOpLayer';
+import { ElementRef } from '@angular/core';
+
 /// <reference lib="webworker" />
 
 @AngularWebWorker()
@@ -16,19 +18,24 @@ export class SuperResolutionWorker implements OnWorkerInit {
     }
 
     @Callable()
-    public async doWork(img: number[][][]): Promise<number[][][]> {
-        tf.engine().startScope();
+    public async doWork(data): Promise<number[][][]> {
 
-        let imgLr = tf.div(img, 255);
-        imgLr = tf.expandDims(imgLr, 0);
+        var gl = data.canvas.getContext("webgl");
 
-        let sr = this.model.predict(imgLr) as tf.Tensor;
+        return null;
 
-        const srArr = (await tf.mul(tf.div(tf.add(sr, 1), 2), 255).array())[0] as number[][][];
+        // tf.engine().startScope();
 
-        tf.engine().endScope();
+        // let imgLr = tf.div(img, 255);
+        // imgLr = tf.expandDims(imgLr, 0);
 
-        return srArr;
+        // let sr = this.model.predict(imgLr) as tf.Tensor;
+
+        // const srArr = (await tf.mul(tf.div(tf.add(sr, 1), 2), 255).array())[0] as number[][][];
+
+        // tf.engine().endScope();
+
+        // return srArr;
     }
 
 }
