@@ -15,6 +15,9 @@
     "typeRoots": [
       "node_modules/@types"
     ],
+    "types": [
+      "w3c-image-capture"
+    ],
     "lib": [
       "es2018",
       "dom"

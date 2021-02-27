@@ -1,6 +1,6 @@
 import { AfterViewInit, Component, ElementRef, ViewChild } from '@angular/core';
-import { WorkerManager, WorkerClient } from 'angular-web-worker/angular';
-import { SuperResolutionWorker } from './workers/super-resolution.worker';
+// import { WorkerManager, WorkerClient } from 'angular-web-worker/angular';
+// import { SuperResolutionWorker } from './workers/super-resolution.worker';
 
 import * as tf from '@tensorflow/tfjs';
 import { from } from 'rxjs';
@@ -13,8 +13,6 @@ import { from } from 'rxjs';
 export class AppComponent implements AfterViewInit {
   @ViewChild('videoElement', { read: ElementRef, static: false })
   videoElement: ElementRef;
-
-
 
   @ViewChild('canvas1src', { read: ElementRef, static: false })
   canvas1src: ElementRef;
@@ -36,7 +34,9 @@ export class AppComponent implements AfterViewInit {
 
   grayscale: ImageData;
 
-  constructor(private workerManager: WorkerManager) { }
+  constructor(
+    // private workerManager: WorkerManager
+  ) {}
 
   async ngAfterViewInit(): Promise<void> {
     this.canvas2 = new OffscreenCanvas(640, 480);
@@ -57,12 +57,17 @@ export class AppComponent implements AfterViewInit {
     });
 
     // init worker
-    this.worker = new Worker("./worker.js", { type: `module` });
+    this.worker = new Worker("./workers/super-resolution.worker", { type: `module` });
     this.worker.onmessage = (e) => this.doWorkerMessage(e);
 
     // init main canvas
     this.canvas1 = this.canvas1src.nativeElement.transferControlToOffscreen();
-    this.worker.postMessage({ offscreen: this.canvas1 }, [this.canvas1]);
+    this.canvas2 = this.canvas2src.nativeElement.transferControlToOffscreen();
+
+    this.worker.postMessage({
+      offscreen1: this.canvas1,
+      offscreen2: this.canvas2
+    }, [this.canvas1, this.canvas2]);
 
     // const image = new Image();
     // image.src = './assets/images/bug128.jpg';
