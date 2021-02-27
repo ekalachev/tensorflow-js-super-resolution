@@ -1,0 +1,44 @@
+.videos-wrapper {
+    display: flex;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+    align-items: center;
+    flex: 1 0 auto;
+
+    video,
+    canvas {
+        width: 640px;
+        height: 480px;
+        transform: scaleX(-1);
+        background-color: #fff;
+    }
+
+    video,
+    img-comparison-slider {
+        margin: 10px;
+        box-shadow: 0px 30px 40px -25px #000;
+    }
+}
+
+.slider-item {
+    position: relative;
+    user-select: none;
+
+    &__heading {
+        position: absolute;
+        top: 5%;
+        z-index: 1;
+        text-shadow: 0 0 5px #000;
+        font-size: 20px;
+        font-weight: 300;
+        color: #fff;
+
+        [slot="after"] > & {
+            left: 5%;
+        }
+
+        [slot="before"] > & {
+            right: 5%;
+        }
+    }
+}
